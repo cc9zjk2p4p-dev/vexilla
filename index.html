@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vexilla – Flag Quiz</title>
+<style>
+:root{--bg:#eaf2fb;--card:#fff;--ink:#10243e;--mute:#5b6b80;--line:#c9d6e6;--acc:#ffc93c;--accink:#10243e;--ok:#1f9d63;--bad:#d6403a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a2b;--card:#172a43;--ink:#eef3fa;--mute:#9fb0c6;--line:#2c4466;--ok:#3fc487;--bad:#ff6b63}}
+:root[data-theme="dark"]{--bg:#0e1a2b;--card:#172a43;--ink:#eef3fa;--mute:#9fb0c6;--line:#2c4466;--ok:#3fc487;--bad:#ff6b63}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;display:flex;justify-content:center}
+main{width:100%;max-width:460px;padding:20px 16px 32px}
+h1{font-size:2rem;margin:8px 0 6px;letter-spacing:-.02em}
+p{color:var(--mute);line-height:1.5;margin:0 0 16px}
+.top{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:12px}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;background:var(--acc);transition:width .3s}
+.flag{background:var(--card);border:2px solid var(--line);border-radius:18px;text-align:center;padding:22px 10px;margin-bottom:16px}
+.flag span{font-size:clamp(112px,40vw,176px);line-height:1.1;display:block}
+.opts{display:grid;gap:10px}
+button{font:inherit;cursor:pointer}
+.opt{background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:14px;font-weight:600;font-size:1rem;text-align:left}
+.opt:focus-visible,.go:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,var(--card))}
+.opt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,var(--card))}
+.opt:disabled{cursor:default}
+.go{background:var(--acc);color:var(--accink);border:0;border-radius:12px;padding:14px 22px;font-weight:800;font-size:1.05rem;width:100%;margin-top:14px}
+.fb{min-height:1.4em;font-weight:700;margin-top:12px}
+.big{font-size:4rem;font-weight:800;line-height:1;margin:8px 0}
+.miss{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.miss b{font-size:1.8rem}
+.lbl{font-weight:700;margin:6px 0}
+.seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px;margin-bottom:14px}
+.seg button{background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:8px 4px;font-weight:700}
+.seg button small{display:block;font-weight:500;color:var(--mute);margin-top:2px;font-size:.72rem}
+.seg button[aria-pressed=true]{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 25%,var(--card))}
+.seg button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+h1 small{font-size:.9rem;color:var(--mute);font-weight:600;margin-left:8px}
+.flag span.name{font-size:2rem;font-weight:800;padding:34px 0;line-height:1.2}
+.opts.vis{grid-template-columns:1fr 1fr}
+.opt.fl{font-size:clamp(56px,18vw,80px);text-align:center;padding:8px;line-height:1.2}
+#timer{font-weight:800;font-variant-numeric:tabular-nums}
+#timer.low{color:var(--bad)}
+.go.alt{background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.mini{background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:4px 10px;font-weight:700;font-size:.9rem}
+.mini:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.btns{display:flex;gap:6px;margin-left:auto}
+.top{flex-wrap:wrap;gap:4px 10px}
+.dlg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.dlg.hidden{display:none}
+.box{background:var(--card);border-radius:16px;padding:20px;max-width:340px;width:100%}
+.box h2{margin:0 0 6px;font-size:1.25rem}
+#start .c1,#start .c2{display:contents}
+#start:not(.hidden){display:flex;flex-direction:column;height:calc(100dvh - 52px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+#start>*,#start .c1>*,#start .c2>*{flex:none}
+#start .flag{flex:1 1 40px;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px;margin-bottom:10px}
+#start .flag span{font-size:min(14vh,84px);white-space:nowrap}
+#start p{margin-bottom:10px}
+#levels{grid-template-columns:repeat(4,1fr)}
+.flag.big{padding:40px 10px}
+.flag.big #flag{font-size:clamp(170px,62vw,300px)}
+.flag.big,.flag.split{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:min(60dvh,460px);gap:6px;padding:26px 6px}
+
+#ans{display:none;text-align:center;min-height:4.6rem;overflow-wrap:anywhere;line-height:1.2;width:100%}
+#nm{display:block;font-size:clamp(1.8rem,9vw,2.8rem);font-weight:800}
+#cap{display:block;font-style:normal;color:var(--mute);font-size:1.5rem;font-weight:700;margin-top:8px}
+#ff{display:block;font-style:normal;font-weight:700;font-size:1rem;line-height:1.35;margin:12px auto 0;max-width:30em;text-align:center;white-space:pre-line}
+.flag.split #flag{display:none}
+.flag.split #ans{display:block}
+.hidden{display:none}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+@media (orientation:landscape) and (max-height:560px){
+main{max-width:920px;padding:8px max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px))}
+h1{font-size:1.5rem;margin:2px 0 4px}
+p{margin-bottom:8px}
+#start:not(.hidden){display:grid;grid-template-columns:1fr 1fr;gap:0 20px;height:calc(100dvh - 22px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+#start .c1,#start .c2{display:flex;flex-direction:column;min-height:0}
+#start .c2{justify-content:center}
+#start .lbl{margin:2px 0}
+#start .seg button{padding:6px 4px}
+#game:not(.hidden){display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"top top" "bar bar" "flag opts" "fb next";gap:6px 18px;align-items:center}
+#game .top{grid-area:top;margin-bottom:0}
+#game .bar{grid-area:bar;margin-bottom:4px}
+#game .flag{grid-area:flag;margin:0;padding:10px}
+#game #opts{grid-area:opts}
+#game #fb{grid-area:fb;margin:0}
+#game #next{grid-area:next;margin:0}
+.flag span{font-size:min(34vh,120px)}
+.flag.big #flag{font-size:min(52vh,200px)}
+#ans{min-height:3rem}
+#nm{font-size:clamp(2.2rem,11vh,3rem)}
+#cap{font-size:1.5rem;font-weight:700;margin-top:16px}
+#ff{font-size:1.25rem;font-weight:700;margin-top:16px}
+
+.flag.big,.flag.split{padding:10px;min-height:min(70dvh,260px)}
+#game.timed .flag{grid-column:1/-1}
+#game .mini{padding:3px 9px}
+.opt{padding:10px 14px}
+.go{padding:11px 18px}
+.seg{margin-bottom:8px}
+}
+</style>
+</head>
+<body>
+<main>
+<section id="start">
+  <div class="c1"><h1>Vexilla<small>v1.11.0</small></h1>
+  <p>Ten flags per round. Choose a mode and a difficulty, build a streak, and beat your best score.</p>
+  <div class="flag"><span>🇰🇷 🇳🇿 🇺🇸</span></div>
+  </div>
+  <div class="c2">
+  <div class="lbl">Mode</div>
+  <div class="seg" id="modes"></div>
+  <div class="lbl">Difficulty</div>
+  <div class="seg" id="levels"></div>
+  <p id="mdesc"></p>
+  <p id="best"></p>
+  <button class="go" id="startBtn">Start round</button></div>
+</section>
+
+<section id="game" class="hidden">
+  <div class="top"><span id="qn"></span><span id="timer"></span><span id="streak"></span><span class="btns"><button class="mini hidden" id="pause" aria-label="Pause">⏸</button><button class="mini hidden" id="skip" aria-label="Next flag">⏭</button><button class="mini hidden" id="stop" aria-label="Menu">☰ Menu</button></span></div>
+  <div class="bar"><i id="prog"></i></div>
+  <div class="flag"><span id="flag" role="img" aria-label="Flag"></span><span id="ans"><b id="nm"></b><i id="cap"></i><em id="ff"></em></span></div>
+  <div class="opts" id="opts"></div>
+  <div class="fb" id="fb" aria-live="polite"></div>
+  <button class="go hidden" id="next">Next flag</button>
+</section>
+
+<section id="end" class="hidden">
+  <h1>Round complete</h1>
+  <div class="big" id="score"></div>
+  <p id="msg"></p>
+  <div id="misses"></div>
+  <button class="go" id="again">Play again</button>
+  <button class="go alt" id="menu">Change mode or difficulty</button>
+</section>
+</main>
+<video id="nosleep" muted playsinline loop width="1" height="1" style="position:fixed;left:0;top:0;width:1px;height:1px;opacity:.01;pointer-events:none" src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAN2bW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAA+gAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAqB0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAA+gAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAEAAAABAAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAPoAAAQAAABAAAAAAIYbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAoAAAAKABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABw21pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAYNzdGJsAAAAv3N0c2QAAAAAAAAAAQAAAK9hdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAEAAQABIAAAASAAAAAAAAAABFUxhdmM2MC4zMS4xMDIgbGlieDI2NAAAAAAAAAAAAAAAGP//AAAANWF2Y0MBZAAK/+EAGGdkAAqs2UQmwEQAAAMABAAAAwAoPEiWWAEABmjr48siwP34+AAAAAAQcGFzcAAAAAEAAAABAAAAFGJ0cnQAAAAAAAAYQAAAGEAAAAAYc3R0cwAAAAAAAAABAAAABQAACAAAAAAUc3RzcwAAAAAAAAABAAAAAQAAADhjdHRzAAAAAAAAAAUAAAABAAAQAAAAAAEAACgAAAAAAQAAEAAAAAABAAAAAAAAAAEAAAgAAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAAFAAAAAQAAAChzdHN6AAAAAAAAAAAAAAAFAAAC1gAAAA4AAAAMAAAADAAAAAwAAAAUc3RjbwAAAAAAAAABAAADpgAAAGJ1ZHRhAAAAWm1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALWlsc3QAAAAlqXRvbwAAAB1kYXRhAAAAAQAAAABMYXZmNjAuMTYuMTAwAAAACGZyZWUAAAMQbWRhdAAAAq0GBf//qdxF6b3m2Ui3lizYINkj7u94MjY0IC0gY29yZSAxNjQgcjMxMDggMzFlMTlmOSAtIEguMjY0L01QRUctNCBBVkMgY29kZWMgLSBDb3B5bGVmdCAyMDAzLTIwMjMgLSBodHRwOi8vd3d3LnZpZGVvbGFuLm9yZy94MjY0Lmh0bWwgLSBvcHRpb25zOiBjYWJhYz0xIHJlZj0zIGRlYmxvY2s9MTowOjAgYW5hbHlzZT0weDM6MHgxMTMgbWU9aGV4IHN1Ym1lPTcgcHN5PTEgcHN5X3JkPTEuMDA6MC4wMCBtaXhlZF9yZWY9MSBtZV9yYW5nZT0xNiBjaHJvbWFfbWU9MSB0cmVsbGlzPTEgOHg4ZGN0PTEgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9LTIgdGhyZWFkcz0xIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MyBiX3B5cmFtaWQ9MiBiX2FkYXB0PTEgYl9iaWFzPTAgZGlyZWN0PTEgd2VpZ2h0Yj0xIG9wZW5fZ29wPTAgd2VpZ2h0cD0yIGtleWludD0yNTAga2V5aW50X21pbj01IHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAAIWWIhAAS//73rd+BTcMrNWu6Vzi0la3kA5MtsETUVp4u9wAAAApBmiRsQ//+qZ00AAAACEGeQniCHwLHAAAACAGeYXRD/wTEAAAACAGeY2pD/wTF"></video>
+<div class="dlg hidden" id="dlg" role="dialog" aria-modal="true" aria-labelledby="dt"><div class="box"><h2 id="dt">Go back to the main menu?</h2><p>Your game is paused.</p><button class="go" id="keep">Keep playing</button><button class="go alt" id="leave">Main menu</button></div></div>
+<script>
+const C={AR:"Argentina",AU:"Australia",AT:"Austria",BE:"Belgium",BR:"Brazil",CA:"Canada",CL:"Chile",CN:"China",CO:"Colombia",HR:"Croatia",CU:"Cuba",CZ:"Czechia",DK:"Denmark",EG:"Egypt",FI:"Finland",FR:"France",DE:"Germany",GR:"Greece",HU:"Hungary",IS:"Iceland",IN:"India",ID:"Indonesia",IE:"Ireland",IL:"Israel",IT:"Italy",JM:"Jamaica",JP:"Japan",KE:"Kenya",MX:"Mexico",MA:"Morocco",NL:"Netherlands",NZ:"New Zealand",NG:"Nigeria",NO:"Norway",PK:"Pakistan",PE:"Peru",PH:"Philippines",PL:"Poland",PT:"Portugal",RO:"Romania",SA:"Saudi Arabia",ZA:"South Africa",KR:"South Korea",ES:"Spain",SE:"Sweden",CH:"Switzerland",TH:"Thailand",TR:"Türkiye",UA:"Ukraine",GB:"United Kingdom",US:"United States",VN:"Vietnam"};
+const MED=Object.keys(C);
+const EASY=["US","GB","FR","DE","IT","ES","JP","CN","BR","CA","AU","IN","MX","KR","SE","NL","GR","EG","AR","CH"];
+Object.assign(C,{AF:"Afghanistan",DZ:"Algeria",BD:"Bangladesh",BO:"Bolivia",BG:"Bulgaria",KH:"Cambodia",CM:"Cameroon",CR:"Costa Rica",CY:"Cyprus",DO:"Dominican Republic",EC:"Ecuador",SV:"El Salvador",EE:"Estonia",ET:"Ethiopia",GE:"Georgia",GH:"Ghana",GT:"Guatemala",HN:"Honduras",IR:"Iran",IQ:"Iraq",JO:"Jordan",KZ:"Kazakhstan",KW:"Kuwait",LV:"Latvia",LB:"Lebanon",LT:"Lithuania",LU:"Luxembourg",MY:"Malaysia",MT:"Malta",MN:"Mongolia",NP:"Nepal",NI:"Nicaragua",PA:"Panama",PY:"Paraguay",QA:"Qatar",RS:"Serbia",SG:"Singapore",SK:"Slovakia",SI:"Slovenia",LK:"Sri Lanka",SN:"Senegal",TN:"Tunisia",UG:"Uganda",AE:"United Arab Emirates",UY:"Uruguay",UZ:"Uzbekistan",VE:"Venezuela",ZW:"Zimbabwe",TZ:"Tanzania",BY:"Belarus"});
+const HARD=Object.keys(C);
+Object.assign(C,{AL:"Albania",AD:"Andorra",AO:"Angola",AG:"Antigua and Barbuda",AM:"Armenia",AZ:"Azerbaijan",BS:"Bahamas",BH:"Bahrain",BB:"Barbados",BZ:"Belize",BJ:"Benin",BT:"Bhutan",BA:"Bosnia and Herzegovina",BW:"Botswana",BN:"Brunei",BF:"Burkina Faso",BI:"Burundi",CV:"Cabo Verde",CF:"Central African Republic",TD:"Chad",KM:"Comoros",CG:"Congo",CD:"DR Congo",CI:"Côte d’Ivoire",DJ:"Djibouti",DM:"Dominica",GQ:"Equatorial Guinea",ER:"Eritrea",SZ:"Eswatini",FJ:"Fiji",GA:"Gabon",GM:"Gambia",GD:"Grenada",GN:"Guinea",GW:"Guinea-Bissau",GY:"Guyana",HT:"Haiti",KI:"Kiribati",KP:"North Korea",KG:"Kyrgyzstan",LA:"Laos",LS:"Lesotho",LR:"Liberia",LY:"Libya",LI:"Liechtenstein",MG:"Madagascar",MW:"Malawi",MV:"Maldives",ML:"Mali",MH:"Marshall Islands",MR:"Mauritania",MU:"Mauritius",FM:"Micronesia",MD:"Moldova",MC:"Monaco",ME:"Montenegro",MZ:"Mozambique",MM:"Myanmar",NA:"Namibia",NR:"Nauru",NE:"Niger",MK:"North Macedonia",OM:"Oman",PW:"Palau",PG:"Papua New Guinea",RW:"Rwanda",KN:"Saint Kitts and Nevis",LC:"Saint Lucia",VC:"Saint Vincent and the Grenadines",WS:"Samoa",SM:"San Marino",ST:"São Tomé and Príncipe",SC:"Seychelles",SL:"Sierra Leone",SB:"Solomon Islands",SO:"Somalia",SS:"South Sudan",SD:"Sudan",SR:"Suriname",SY:"Syria",TJ:"Tajikistan",TL:"Timor-Leste",TG:"Togo",TO:"Tonga",TT:"Trinidad and Tobago",TM:"Turkmenistan",TV:"Tuvalu",VU:"Vanuatu",YE:"Yemen",ZM:"Zambia",RU:"Russia"});
+const EXP=Object.keys(C),N=10;
+const CAP={AR:"Buenos Aires",AU:"Canberra",AT:"Vienna",BE:"Brussels",BR:"Brasília",CA:"Ottawa",CL:"Santiago",CN:"Beijing",CO:"Bogotá",HR:"Zagreb",CU:"Havana",CZ:"Prague",DK:"Copenhagen",EG:"Cairo",FI:"Helsinki",FR:"Paris",DE:"Berlin",GR:"Athens",HU:"Budapest",IS:"Reykjavík",IN:"New Delhi",ID:"Jakarta",IE:"Dublin",IL:"Jerusalem",IT:"Rome",JM:"Kingston",JP:"Tokyo",KE:"Nairobi",MX:"Mexico City",MA:"Rabat",NL:"Amsterdam",NZ:"Wellington",NG:"Abuja",NO:"Oslo",PK:"Islamabad",PE:"Lima",PH:"Manila",PL:"Warsaw",PT:"Lisbon",RO:"Bucharest",SA:"Riyadh",ZA:"Pretoria",KR:"Seoul",ES:"Madrid",SE:"Stockholm",CH:"Bern",TH:"Bangkok",TR:"Ankara",UA:"Kyiv",GB:"London",US:"Washington, D.C.",VN:"Hanoi",
+AF:"Kabul",DZ:"Algiers",BD:"Dhaka",BO:"Sucre",BG:"Sofia",KH:"Phnom Penh",CM:"Yaoundé",CR:"San José",CY:"Nicosia",DO:"Santo Domingo",EC:"Quito",SV:"San Salvador",EE:"Tallinn",ET:"Addis Ababa",GE:"Tbilisi",GH:"Accra",GT:"Guatemala City",HN:"Tegucigalpa",IR:"Tehran",IQ:"Baghdad",JO:"Amman",KZ:"Astana",KW:"Kuwait City",LV:"Riga",LB:"Beirut",LT:"Vilnius",LU:"Luxembourg",MY:"Kuala Lumpur",MT:"Valletta",MN:"Ulaanbaatar",NP:"Kathmandu",NI:"Managua",PA:"Panama City",PY:"Asunción",QA:"Doha",RS:"Belgrade",SG:"Singapore",SK:"Bratislava",SI:"Ljubljana",LK:"Sri Jayawardenepura Kotte",SN:"Dakar",TN:"Tunis",UG:"Kampala",AE:"Abu Dhabi",UY:"Montevideo",UZ:"Tashkent",VE:"Caracas",ZW:"Harare",TZ:"Dodoma",BY:"Minsk",
+AL:"Tirana",AD:"Andorra la Vella",AO:"Luanda",AG:"Saint John’s",AM:"Yerevan",AZ:"Baku",BS:"Nassau",BH:"Manama",BB:"Bridgetown",BZ:"Belmopan",BJ:"Porto-Novo",BT:"Thimphu",BA:"Sarajevo",BW:"Gaborone",BN:"Bandar Seri Begawan",BF:"Ouagadougou",BI:"Gitega",CV:"Praia",CF:"Bangui",TD:"N’Djamena",KM:"Moroni",CG:"Brazzaville",CD:"Kinshasa",CI:"Yamoussoukro",DJ:"Djibouti",DM:"Roseau",GQ:"Malabo",ER:"Asmara",SZ:"Mbabane",FJ:"Suva",GA:"Libreville",GM:"Banjul",GD:"Saint George’s",GN:"Conakry",GW:"Bissau",GY:"Georgetown",HT:"Port-au-Prince",KI:"Tarawa",KP:"Pyongyang",KG:"Bishkek",LA:"Vientiane",LS:"Maseru",LR:"Monrovia",LY:"Tripoli",LI:"Vaduz",MG:"Antananarivo",MW:"Lilongwe",MV:"Malé",ML:"Bamako",MH:"Majuro",MR:"Nouakchott",MU:"Port Louis",FM:"Palikir",MD:"Chișinău",MC:"Monaco",ME:"Podgorica",MZ:"Maputo",MM:"Naypyidaw",NA:"Windhoek",NR:"Yaren",NE:"Niamey",MK:"Skopje",OM:"Muscat",PW:"Ngerulmud",PG:"Port Moresby",RW:"Kigali",KN:"Basseterre",LC:"Castries",VC:"Kingstown",WS:"Apia",SM:"San Marino",ST:"São Tomé",SC:"Victoria",SL:"Freetown",SB:"Honiara",SO:"Mogadishu",SS:"Juba",SD:"Khartoum",SR:"Paramaribo",SY:"Damascus",TJ:"Dushanbe",TL:"Dili",TG:"Lomé",TO:"Nuku’alofa",TT:"Port of Spain",TM:"Ashgabat",TV:"Funafuti",VU:"Port Vila",YE:"Sana’a",ZM:"Lusaka",RU:"Moscow"};
+const LV={easy:{n:"Easy",p:EASY},med:{n:"Medium",p:MED},hard:{n:"Hard",p:HARD},exp:{n:"Expert",p:EXP}};
+const MD={classic:{n:"Classic",s:"Flag to name",d:"Name the country from its flag."},timed:{n:"Flashcards",s:"Endless, hands free",d:"Endless. Each flag shows for 10 seconds, with beeps from 3. Then the answer appears and the next flag starts. Every country shows once before any repeats."}};
+const FF={AR:["Home of the tango.","Aconcagua is the highest peak outside Asia.","Largest Spanish-speaking country by area."],AU:["Has more kangaroos than people.","Home to the Great Barrier Reef.","Wombat droppings are cube-shaped."],AT:["Mozart was born in Salzburg.","Vienna’s coffee house culture is UNESCO-listed.","The Alps cover about two thirds of it."],BE:["Its beer culture is UNESCO-listed.","Has three official languages: Dutch, French, German.","Brussels hosts major EU institutions."],BR:["Largest country in South America.","Holds most of the Amazon rainforest.","Only Portuguese-speaking country in South America."],CA:["Has the longest coastline of any country.","Has more lakes than any other country.","Makes most of the world’s maple syrup."],CL:["The longest country north to south.","Home to the Atacama, one of the driest deserts.","Owns Easter Island (Rapa Nui)."],CN:["Home to the Great Wall.","Gave the world paper and gunpowder.","Uses a single time zone nationwide."],CO:["Has more bird species than any other country.","Has coasts on both the Pacific and the Caribbean.","Famous for its coffee."],HR:["Has over 1,000 islands.","The necktie traces back to Croatian soldiers.","Dubrovnik appeared in Game of Thrones."],CU:["Classic 1950s American cars still fill its streets.","Largest island in the Caribbean.","Famous for hand-rolled cigars."],CZ:["People here drink more beer per head than anywhere else.","Gave the world the word ‘robot’.","Prague Castle is among the largest castle complexes."],DK:["Lego was invented here.","Its flag is among the oldest still in use.","Often ranks among the happiest countries."],EG:["Home to the Great Pyramid of Giza.","The Nile runs through it.","Cairo is one of Africa’s largest cities."],FI:["Has around 188,000 lakes.","Has about three million saunas.","Santa Claus Village is in Rovaniemi."],FR:["Often the world’s most visited country.","The Eiffel Tower opened in 1889.","Makes more than 1,000 kinds of cheese."],DE:["Has about 1,500 kinds of sausage.","Many autobahn stretches have no speed limit.","Gutenberg’s printing press began in Mainz."],GR:["Hosted the first modern Olympics in 1896.","Has over 6,000 islands and islets.","Democracy began in ancient Athens."],HU:["The Rubik’s Cube was invented here.","Budapest was once two cities, Buda and Pest.","Its metro line from 1896 is among Europe’s oldest."],IS:["Has no mosquitoes.","Runs almost entirely on renewable energy.","Its parliament, the Althing, dates to 930."],IN:["The most populous country in the world.","Chess likely began here.","Home to the Taj Mahal."],ID:["Has over 17,000 islands.","Has more active volcanoes than any other country.","Home to Komodo dragons."],IE:["Has no native snakes.","Halloween grew from the Irish festival Samhain.","Its national symbol is the harp."],IL:["The Dead Sea shore is the lowest land on Earth.","Revived Hebrew as a spoken language.","Cherry tomatoes were developed here."],IT:["Has more UNESCO World Heritage Sites than any other country.","Surrounds two countries: Vatican City and San Marino.","Pizza was born in Naples."],JM:["Birthplace of reggae.","Home country of sprinter Usain Bolt.","Famous for Blue Mountain coffee."],JP:["Has over 6,800 islands.","Bullet trains began running in 1964.","Vending machines are almost everywhere."],KE:["Home to the Great Migration in the Maasai Mara.","The equator crosses it.","Produces many top long-distance runners."],MX:["Mesoamerican peoples first made chocolate.","Mexico City sits on a drained lake.","Day of the Dead is a UNESCO-listed tradition."],MA:["Fez has one of the oldest universities still running.","Chefchaouen is famous as the blue city.","Only about 14 km from Europe across the Strait of Gibraltar."],NL:["About a quarter of it lies below sea level.","Has more bikes than people.","A top exporter of farm goods."],NZ:["First country to give women the vote, in 1893.","Has more sheep than people.","Home to the flightless kiwi bird."],NG:["The most populous country in Africa.","Nollywood is among the world’s biggest film industries.","Hundreds of languages are spoken here."],NO:["Lærdal is the world’s longest road tunnel.","The sun doesn’t set for weeks in summer in the north.","The Nobel Peace Prize is awarded in Oslo."],PK:["Home to K2, the world’s second-highest mountain.","Mohenjo-daro was a city of the Indus Valley civilization.","Has one of the world’s largest populations."],PE:["Home to Machu Picchu.","Has thousands of potato varieties.","Part of the Amazon’s source lies in its Andes."],PH:["Has over 7,600 islands.","One of the largest English-speaking populations.","Home to the tiny tarsier primate."],PL:["Białowieża is one of Europe’s last primeval forests.","Marie Curie was born in Warsaw.","Copernicus came from Toruń."],PT:["Its borders have barely changed since 1297.","Makes about half of the world’s cork.","Vasco da Gama reached India by sea in 1498."],RO:["Bran Castle is linked to the Dracula legend.","Its Parliament Palace is among the heaviest buildings anywhere.","Has a large population of brown bears."],SA:["Has no permanent rivers.","Mecca and Medina are here.","Largest country in the Middle East by area."],ZA:["Has three capital cities.","Lesotho sits entirely inside it.","The Cullinan diamond was found here in 1905."],KR:["Birthplace of K-pop and taekwondo.","Has some of the world’s fastest internet.","Kimchi is a staple at almost every meal."],ES:["Sobrino de Botín in Madrid is the oldest restaurant on record.","Buñol holds the La Tomatina tomato fight.","The world’s top olive oil producer."],SE:["Volvo introduced the three-point seat belt.","Has about 267,000 islands.","Nobel Prizes are awarded in Stockholm."],CH:["Has four national languages.","Home to the Matterhorn.","Women got the national vote only in 1971."],TH:["Never colonised by a European power.","Bangkok’s ceremonial name is among the longest city names.","The elephant is its national animal."],TR:["Spans both Europe and Asia.","Istanbul was capital of both the Roman and Ottoman empires.","The Grand Bazaar is one of the largest covered markets."],UA:["Kyiv’s Arsenalna is the world’s deepest metro station.","Often called Europe’s breadbasket.","Largest country entirely within Europe."],GB:["Big Ben is the bell, not the tower.","Has no single written constitution document.","Drives on the left."],US:["Has no official language at the federal level.","Home to the Grand Canyon.","Has the world’s largest economy."],VN:["Second-largest coffee exporter.","Hang Sơn Đoòng is the world’s largest cave.","Tens of millions of motorbikes are on its roads."],AF:["Landlocked and mountainous.","Saffron and pomegranates are major crops."],DZ:["Largest country in Africa by area.","Most of it is Sahara desert."],BD:["Has the world’s largest river delta, shared with India.","The Sundarbans is a vast mangrove forest."],BO:["Has the world’s largest salt flat, Uyuni.","Sucre and La Paz both serve as capitals."],BG:["The Cyrillic alphabet was developed in the First Bulgarian Empire.","One of Europe’s oldest countries, founded in 681."],KH:["Angkor Wat is the largest religious monument.","Its flag is the only one showing a building."],CM:["Called ‘Africa in miniature’.","Hundreds of languages are spoken here."],CR:["Abolished its army in 1948.","Packed with biodiversity."],CY:["Legendary birthplace of Aphrodite.","Its flag shows the island’s outline."],DO:["Shares the island of Hispaniola with Haiti.","Has the oldest cathedral in the Americas."],EC:["Named after the equator.","Owns the Galápagos Islands."],SV:["Smallest country in Central America.","Nicknamed the Land of Volcanoes."],EE:["Skype was created here.","Over half of it is forest."],ET:["Uses its own calendar, years behind the usual one.","Believed birthplace of coffee."],GE:["One of the oldest wine regions, over 8,000 years.","Sits where Europe meets Asia."],GH:["First sub-Saharan country to gain independence, in 1957.","A leading cocoa producer."],GT:["Home to the Maya pyramids of Tikal.","Has over 30 volcanoes."],HN:["Copán was a major Maya city.","Its name is often said to mean ‘depths’."],IR:["The world’s largest producer of saffron.","Once known as Persia."],IQ:["Writing began in ancient Mesopotamia, here.","The Tigris and Euphrates both run through it."],JO:["Home to the rock city of Petra.","You float easily in the Dead Sea."],KZ:["Largest landlocked country in the world.","Russia leases the Baikonur Cosmodrome here."],KW:["Its dinar is among the highest-valued currencies.","A small, oil-rich Gulf country."],LV:["Riga has a huge collection of Art Nouveau buildings.","Riga claims the first decorated Christmas tree."],LB:["Its flag shows a cedar tree.","Beirut is among the world’s oldest cities."],LT:["Last European country to become Christian, in 1387.","Claims the geographic centre of Europe."],LU:["One of the world’s smallest countries.","Has one of the highest GDPs per person."],MY:["Home to the Petronas Towers.","Its Borneo rainforest is among the oldest on Earth."],MT:["Has some of the world’s oldest free-standing structures.","One of the EU’s smallest members."],MN:["The least densely populated country in the world.","Genghis Khan founded its great empire."],NP:["Mount Everest sits on its border.","Its flag is the only non-rectangular national flag."],NI:["Has Central America’s largest lake.","Bull sharks live in that lake."],PA:["The Panama Canal links the Atlantic and Pacific.","Panama hats actually come from Ecuador."],PY:["Landlocked in South America.","Guaraní is an official language beside Spanish."],QA:["Hosted the 2022 FIFA World Cup.","Has one of the highest incomes per person."],RS:["Belgrade is one of Europe’s oldest cities.","Nikola Tesla is on its banknote."],SG:["Both a city and a country.","Chewing gum sales are largely banned."],SK:["Has more castles per person than almost anywhere.","Bratislava borders both Austria and Hungary."],SI:["More than half of it is forest.","Lake Bled has an island church."],LK:["Once called Ceylon.","Famous for its tea."],SN:["Dakar is Africa’s westernmost capital.","Lake Retba is a pink lake."],TN:["Star Wars scenes for Tatooine were filmed here.","Ancient Carthage stood here."],UG:["A source of the Nile is at Jinja.","Home to many mountain gorillas."],AE:["The Burj Khalifa is the tallest building.","Made up of seven emirates."],UY:["Won the first FIFA World Cup in 1930.","Has more cows than people."],UZ:["One of only two doubly landlocked countries.","Samarkand was a major Silk Road city."],VE:["Angel Falls is the world’s tallest waterfall.","Has the largest proven oil reserves."],ZW:["Victoria Falls lies on its border.","Named after the ruins of Great Zimbabwe."],TZ:["Home to Mount Kilimanjaro.","The Serengeti wildebeest migration crosses it."],BY:["Shares Białowieża Forest with Poland.","Landlocked in Eastern Europe."],AL:["Locals call it Shqipëria."],AD:["A tiny country in the Pyrenees."],AO:["Portuguese is its official language."],AG:["A twin-island nation in the Caribbean."],AM:["First country to adopt Christianity as a state religion, in 301."],AZ:["Known as the Land of Fire."],BS:["Has about 700 islands."],BH:["An island nation in the Persian Gulf."],BB:["Birthplace of singer Rihanna."],BZ:["Has the second-largest barrier reef in the world."],BJ:["The Vodun religion began here."],BT:["Measures progress with Gross National Happiness."],BA:["Sarajevo hosted the 1984 Winter Olympics."],BW:["Home to the Okavango Delta."],BN:["Ruled by a sultan."],BF:["Its name means ‘land of upright people’."],BI:["A small country in East Africa."],CV:["An island nation off West Africa."],CF:["Landlocked in central Africa."],TD:["Named after Lake Chad."],KM:["Known for ylang-ylang perfume flowers."],CG:["Brazzaville faces Kinshasa across the Congo River."],CD:["Africa’s second-largest country by area."],CI:["The world’s top cocoa producer."],DJ:["Lake Assal is one of Africa’s lowest points."],DM:["Called the Nature Island of the Caribbean."],GQ:["The only Spanish-speaking country in Africa."],ER:["Lies along the Red Sea."],SZ:["Formerly called Swaziland."],FJ:["Has over 300 islands."],GA:["Largely covered by rainforest."],GM:["The smallest country on mainland Africa."],GD:["Called the Spice Isle."],GN:["The Niger River begins here."],GW:["Includes the Bijagós archipelago."],GY:["The only English-speaking country in South America."],HT:["First Black-led republic, independent in 1804."],KI:["Kiritimati is among the first places to see each new day."],KP:["Occupies the northern half of the Korean Peninsula."],KG:["Mostly mountainous."],LA:["Landlocked in Southeast Asia."],LS:["Entirely surrounded by South Africa."],LR:["Founded by freed African Americans."],LY:["Most of it is desert."],LI:["A tiny country between Switzerland and Austria."],MG:["Home to lemurs found nowhere else."],MW:["Lake Malawi holds more fish species than any other lake."],MV:["The lowest-lying country on Earth."],ML:["Timbuktu was a famed centre of learning."],MH:["Includes Bikini Atoll."],MR:["The Eye of the Sahara is here."],MU:["The only home of the extinct dodo."],FM:["Has over 600 islands."],MD:["Has some of the world’s largest wine cellars."],MC:["The second-smallest country in the world."],ME:["Its name means ‘black mountain’."],MZ:["Its flag features an AK-47."],MM:["Also known as Burma."],NA:["The Namib is among the oldest deserts."],NR:["The world’s smallest island nation."],NE:["Most of it lies in the Sahara."],MK:["Lake Ohrid is one of Europe’s oldest lakes."],OM:["Known for frankincense."],PW:["Banned reef-toxic sunscreens early on."],PG:["Over 800 languages are spoken here."],RW:["Called the Land of a Thousand Hills."],KN:["The smallest country in the Americas."],LC:["Famous for the twin Pitons peaks."],VC:["La Soufrière is an active volcano here."],WS:["Skipped a day in 2011 by crossing the date line."],SM:["Claims to be the world’s oldest republic."],ST:["A small island nation on the equator."],SC:["Africa’s least populous country."],SL:["Known for its diamonds."],SB:["Guadalcanal saw a major WWII battle."],SO:["Longest coastline on mainland Africa."],SS:["Newest UN member, since 2011."],SD:["Has more pyramids than Egypt."],SR:["The smallest country in South America."],SY:["Damascus is among the oldest inhabited cities."],TJ:["Mostly mountains, including the Pamirs."],TL:["Became independent in 2002."],TG:["A narrow West African country."],TO:["A kingdom in the South Pacific."],TT:["Birthplace of calypso and the steelpan."],TM:["The Darvaza gas crater burns as the ‘Door to Hell’."],TV:["One of the world’s smallest countries."],VU:["Land diving here inspired bungee jumping."],YE:["Socotra island has unique dragon blood trees."],ZM:["Shares Victoria Falls with Zimbabwe."],RU:["The largest country in the world by area."]};
+const seen={};
+function facts(a){const f=FF[a]||[],L=f.length;if(!L)return"";if(seen[a]===undefined)seen[a]=Math.floor(Math.random()*L);const n=Math.min(2,L),o=[];for(let k=0;k<n;k++)o.push("• "+f[(seen[a]+k)%L]);seen[a]=(seen[a]+n)%L;return o.join("\n")}
+const POP={AR:46,AU:26,AT:9,BE:12,BR:212,CA:40,CL:20,CN:1410,CO:52,HR:3.9,CU:11,CZ:11,DK:5.9,EG:112,FI:5.6,FR:68,DE:84,GR:10,HU:9.6,IS:0.39,IN:1430,ID:277,IE:5.3,IL:9.8,IT:59,JM:2.8,JP:124,KE:55,MX:129,MA:37,NL:18,NZ:5.2,NG:224,NO:5.5,PK:240,PE:34,PH:117,PL:37,PT:10,RO:19,SA:36,ZA:63,KR:52,ES:48,SE:10,CH:8.9,TH:71,TR:85,UA:37,GB:68,US:335,VN:100,AF:42,DZ:46,BD:173,BO:12,BG:6.4,KH:17,CM:28,CR:5.2,CY:1.3,DO:11,EC:18,SV:6.3,EE:1.4,ET:126,GE:3.7,GH:34,GT:18,HN:10,IR:90,IQ:45,JO:11,KZ:20,KW:4.3,LV:1.9,LB:5.5,LT:2.9,LU:0.66,MY:34,MT:0.53,MN:3.4,NP:30,NI:7,PA:4.5,PY:6.8,QA:2.7,RS:6.6,SG:5.9,SK:5.4,SI:2.1,LK:22,SN:18,TN:12,UG:49,AE:10,UY:3.4,UZ:36,VE:28,ZW:16,TZ:67,BY:9.1,AL:2.8,AD:0.08,AO:36,AG:0.1,AM:2.8,AZ:10,BS:0.4,BH:1.5,BB:0.28,BZ:0.41,BJ:13,BT:0.78,BA:3.2,BW:2.6,BN:0.45,BF:23,BI:13,CV:0.6,CF:5.7,TD:18,KM:0.85,CG:6,CD:100,CI:29,DJ:1.1,DM:0.07,GQ:1.7,ER:3.7,SZ:1.2,FJ:0.93,GA:2.4,GM:2.7,GD:0.12,GN:14,GW:2.1,GY:0.8,HT:12,KI:0.13,KP:26,KG:7,LA:7.6,LS:2.3,LR:5.4,LY:7,LI:0.04,MG:30,MW:21,MV:0.52,ML:23,MH:0.04,MR:4.9,MU:1.3,FM:0.11,MD:2.5,MC:0.039,ME:0.62,MZ:34,MM:54,NA:2.6,NR:0.012,NE:27,MK:1.8,OM:4.6,PW:0.018,PG:10,RW:14,KN:0.047,LC:0.18,VC:0.1,WS:0.22,SM:0.034,ST:0.23,SC:0.1,SL:8.6,SB:0.74,SO:18,SS:11,SD:48,SR:0.62,SY:23,TJ:10,TL:1.4,TG:9,TO:0.1,TT:1.4,TM:6.5,TV:0.011,VU:0.33,YE:34,ZM:20,RU:144};
+const BAD=/landlocked|UNESCO|archipelago|republic|emirate|Cyrillic|constitution|Mesoamerican|primeval|doubly|monarch/i,lastF={};
+function popf(a){const p=POP[a];if(p===undefined)return"";const s=p>=1000?(p/1000).toFixed(1)+" billion":p>=1?p+" million":Math.round(p*1000)+",000";return"About "+s+" people live here."}
+function fact1(a){const c=(FF[a]||[]).filter(t=>t.length<=44&&!BAD.test(t)),pf=popf(a);if(pf)c.push(pf);if(!c.length)return"";let t=c[Math.floor(Math.random()*c.length)];if(c.length>1&&t===lastF[a])t=c[(c.indexOf(t)+1)%c.length];lastF[a]=t;return t}
+let mode="classic",level="med",pool=MED;
+const emoji=c=>String.fromCodePoint(...[...c].map(x=>127397+x.charCodeAt(0)));
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let qs,i,score,streak,misses;
+function getBest(){try{return +localStorage.getItem("vexBest_"+mode+"_"+level)||0}catch(e){return 0}}
+function setBest(v){try{localStorage.setItem("vexBest_"+mode+"_"+level,v)}catch(e){}}
+function show(id){["start","game","end"].forEach(s=>$(s).classList.toggle("hidden",s!==id))}
+function seg(id,defs,cur,set){const el=$(id);el.innerHTML="";Object.keys(defs).forEach(k=>{const d=defs[k],b=document.createElement("button");b.setAttribute("aria-pressed",k===cur);b.innerHTML="<span></span><small></small>";b.firstChild.textContent=d.n;b.lastChild.textContent=d.s||d.p.length+" countries";b.onclick=()=>{set(k);home()};el.appendChild(b)})}
+function home(){unlock();
+  seg("modes",MD,mode,k=>{mode=k});
+  seg("levels",LV,level,k=>{level=k;pool=LV[k].p});
+  $("mdesc").textContent=MD[mode].d;
+  const b=getBest();$("best").textContent=mode==="timed"?"":b?"Best on this setting: "+b+" / "+N:"No best score on this setting yet.";show("start")}
+function begin(){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}
+  clearInterval(tid);clearTimeout(adv);$("game").classList.toggle("timed",mode==="timed");
+  if(mode==="timed"){lock();deck=[];n=0;lap=1;askTimed();return}
+  qs=shuffle(pool).slice(0,N);i=0;score=0;streak=0;misses=[];ask()}
+function ask(){
+  const a=qs[i];
+  const opts=shuffle([a,...shuffle(pool.filter(c=>c!==a)).slice(0,3)]);
+  $("qn").textContent="Flag "+(i+1)+" of "+N;
+  $("streak").textContent=streak>1?"Streak: "+streak:"";
+  $("prog").style.width=(i/N*100)+"%";
+  const vis=mode==="timed";
+  $("flag").textContent=emoji(a);$("flag").className="";
+  $("fb").textContent="";$("fb").style.color="";$("fb").style.fontSize="";
+  $("next").classList.add("hidden");
+  $("opts").innerHTML="";$("opts").className=vis?"opts vis":"opts";
+  if(!vis)opts.forEach(c=>{const b=document.createElement("button");b.className=vis?"opt fl":"opt";b.textContent=vis?emoji(c):C[c];b.onclick=()=>pick(b,c,a);b.dataset.c=c;$("opts").appendChild(b)});
+  phase=null;paused=false;["pause","skip"].forEach(x=>$(x).classList.add("hidden"));$("stop").classList.remove("hidden");document.querySelector("#game .flag").className="flag";$("nm").textContent="";$("cap").textContent="";$("ff").textContent="";show("game");if(vis)startTimer(a);else{clearInterval(tid);$("timer").textContent=""}
+}
+function pick(btn,c,a){clearInterval(tid);
+  document.querySelectorAll(".opt").forEach(b=>{b.disabled=true;if(b.dataset.c===a)b.classList.add("ok")});
+  if(c===a){score++;streak++;$("fb").textContent="Correct";$("fb").style.color="var(--ok)"}
+  else{streak=0;misses.push(a);if(btn)btn.classList.add("bad");$("fb").textContent="It’s "+C[a];$("fb").style.color="var(--bad)";if(mode==="timed")$("fb").textContent=c?"Wrong":"Time’s up"}
+  $("streak").textContent=streak>1?"Streak: "+streak:"";
+  $("next").textContent=i===N-1?"See results":"Next flag";
+  $("next").classList.remove("hidden");$("next").focus();
+}
+let tid,left,ac,cur,phase,wl=null;
+async function lock(){try{const v=$("nosleep");if(v){v.play().catch(()=>{})}}catch(e){}try{if(navigator.wakeLock&&!wl){wl=await navigator.wakeLock.request("screen");wl.addEventListener("release",()=>{wl=null})}}catch(e){wl=null}}
+function unlock(){try{const v=$("nosleep");if(v)v.pause()}catch(e){}try{if(wl)wl.release()}catch(e){}wl=null}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&mode==="timed"&&!$("game").classList.contains("hidden"))lock()});
+function beep(f,d){try{if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function tick(snd){$("timer").textContent=left+" s";$("timer").className=left<=3?"low":"";if(snd&&left>0&&left<=3)beep(880,.12);if(snd&&left===0)beep(330,.5)}
+let deck=[],n=0,lap=1,last=null,adv,paused=false;
+function askTimed(){
+  if(!deck.length){deck=shuffle(pool);if(n>0)lap++}
+  if(deck.length>1&&deck[deck.length-1]===last){const t=deck.length-1;[deck[0],deck[t]]=[deck[t],deck[0]]}
+  const a=deck.pop();last=a;n++;
+  const k=pool.length-deck.length;
+  $("qn").textContent="Flag "+k+"/"+pool.length+(lap>1?", round "+lap:"");
+  $("streak").textContent="";$("prog").style.width=(k/pool.length*100)+"%";
+  $("flag").textContent=emoji(a);$("nm").textContent="";$("cap").textContent="";$("ff").textContent="";
+  document.querySelector("#game .flag").className="flag big";
+  $("opts").innerHTML="";$("fb").textContent="";
+  $("next").classList.add("hidden");["pause","skip","stop"].forEach(x=>$(x).classList.remove("hidden"));paused=false;$("pause").textContent="⏸";
+  show("game");startTimer(a);
+}
+function reveal(a){phase="reveal";clearTimeout(adv);$("timer").textContent="";document.querySelector("#game .flag").className="flag split";$("nm").textContent=C[a];$("cap").textContent="Capital city: "+(CAP[a]||"");$("ff").textContent=fact1(a);adv=setTimeout(askTimed,7000)}
+function startTimer(a){cur=a;phase="count";left=10;tick(false);runTimer(a)}
+function runTimer(a){clearInterval(tid);tid=setInterval(()=>{left--;tick(true);if(left<=0){clearInterval(tid);reveal(a)}},1000)}
+function pauseGame(){clearInterval(tid);clearTimeout(adv);$("dlg").classList.remove("hidden");$("keep").focus()}
+function resumeRun(){if(phase==="count")runTimer(cur);else if(phase==="reveal")adv=setTimeout(askTimed,3500)}
+function resumeGame(){$("dlg").classList.add("hidden");if(!paused)resumeRun()}
+function togglePause(){paused=!paused;$("pause").textContent=paused?"▶":"⏸";$("pause").setAttribute("aria-label",paused?"Resume":"Pause");if(paused){clearInterval(tid);clearTimeout(adv);$("fb").textContent="Paused"}else{$("fb").textContent="";resumeRun()}}
+function skipFlag(){clearInterval(tid);clearTimeout(adv);askTimed()}
+function finish(){
+  const prev=getBest();$("prog").style.width="100%";if(mode==="timed"){$("score").textContent=N+" flags";$("msg").textContent="Flags from this round. Play again for a new set.";$("misses").innerHTML="<p><b>Review</b></p>";qs.forEach(c=>{const d=document.createElement("div");d.className="miss";d.innerHTML="<b></b><span></span>";d.firstChild.textContent=emoji(c);d.lastChild.textContent=C[c];$("misses").appendChild(d)});show("end");return}
+  $("score").textContent=score+" / "+N;
+  let m=score===N?"Perfect round.":score>=7?"Strong round.":score>=4?"Solid start. Another round will help.":"Tough one. Try again.";
+  if(score>prev){setBest(score);m+=" New best score.";}
+  $("msg").textContent=m;
+  $("misses").innerHTML=misses.length?"<p><b>Review</b></p>":"";
+  misses.forEach(c=>{const d=document.createElement("div");d.className="miss";d.innerHTML="<b></b><span></span>";d.firstChild.textContent=emoji(c);d.lastChild.textContent=C[c];$("misses").appendChild(d)});
+  show("end");
+}
+$("startBtn").onclick=begin;$("again").onclick=begin;$("menu").onclick=home;$("stop").onclick=pauseGame;$("pause").onclick=togglePause;$("skip").onclick=skipFlag;$("keep").onclick=resumeGame;$("leave").onclick=()=>{$("dlg").classList.add("hidden");phase=null;paused=false;home()};
+$("next").onclick=()=>{i++;i<N?ask():finish()};
+home();
+</script>
+</body>
+</html>
