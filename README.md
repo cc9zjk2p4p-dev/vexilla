@@ -3,7 +3,7 @@
 A flag quiz in a single HTML file. No build step, no dependencies.
 
 - **Classic**: name the country from its flag (Easy, Medium, Hard, Expert).
-- **Flashcards**: endless, hands-free flags with a 10 second countdown, then the country, capital city and a fun fact.
+- **Flashcards**: endless, hands-free flags with a 10 second countdown, then the country (with its Korean name), capital city, continent, languages, currency and landmarks.
 
 ## Put it on GitHub Pages
 
